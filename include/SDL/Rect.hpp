@@ -11,7 +11,7 @@ namespace SDL {
         Rect()= default;
 
         template <typename N>
-        Rect(const Rect<N> &other): position(other._position), size(other._size) {
+        Rect(const Rect<N> &other): position(other.position), size(other.size) {
 
         }
 
@@ -56,7 +56,7 @@ namespace SDL {
             const T top = std::max(position.y, other.position.y);
             const T right = std::min(position.x + size.x, other.position.x + other.size.x);
             const T bottom = std::min(position.y + size.y, other.position.y + other.size.y);
-            return left <= right && top <= bottom;
+            return left < right && top < bottom;
         }
 
         [[nodiscard]] std::optional<Rect> Intersection(const Rect &other) const {
@@ -65,7 +65,7 @@ namespace SDL {
             const T right = std::min(position.x + size.x, other.position.x + other.size.x);
             const T bottom = std::min(position.y + size.y, other.position.y + other.size.y);
 
-            if (left <= right && top <= bottom)
+            if (left < right && top < bottom)
                 return Rect(left, top, right - left, bottom - top);
             return std::nullopt;
         }

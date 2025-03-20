@@ -1,6 +1,6 @@
 ﻿#ifndef COLOR_HPP
 #define COLOR_HPP
-#include <bits/stl_algo.h>
+#include <algorithm>
 #include <SDL3/SDL_pixels.h>
 
 namespace SDL {

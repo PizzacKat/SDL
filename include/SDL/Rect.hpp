@@ -70,6 +70,10 @@ namespace SDL {
             return std::nullopt;
         }
 
+        std::optional<Rect> operator&(const Rect &other) const {
+            return Intersection(other);
+        }
+
         Vector2<T> position;
         Vector2<T> size;
     };

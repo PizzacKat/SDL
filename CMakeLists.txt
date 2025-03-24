@@ -20,6 +20,10 @@ add_executable(SDL main.cpp
         src/Init.cpp
         include/SDL/Event.hpp
         include/SDL/Rect.hpp
+        include/SDL/Timer.hpp
+        src/Timer.cpp
+        src/Vertex.cpp
+        src/Shapes.cpp
 )
 target_include_directories(SDL PUBLIC include)
 target_link_libraries(SDL SDL3 SDL3_image)

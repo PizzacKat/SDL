@@ -8,21 +8,12 @@
 #include "Vector.hpp"
 
 namespace SDL {
-    class Vertex {
-    public:
-        Vertex()= default;
+    struct Vertex {
+        Vertex();
 
-        Vertex(const FVector2 &position, const Color &color, const FVector2 &textureCoord = {}): position(position), color(color), texCoord(textureCoord) {
-
-        }
-
-        Vertex(const SDL_Vertex &vertex): position(vertex.position), color(vertex.color), texCoord(vertex.tex_coord) {
-
-        }
-
-        operator SDL_Vertex() const {
-            return {position, color, texCoord};
-        }
+        Vertex(const FVector2 &position, const Color &color, const FVector2 &textureCoord = {});
+        Vertex(const SDL_Vertex &vertex);
+        operator SDL_Vertex() const;
 
         FVector2 position;
         FColor color;
@@ -31,33 +22,17 @@ namespace SDL {
 
     class VertexBuffer {
     public:
-        VertexBuffer()= default;
+        VertexBuffer();
 
-        void Add(const Vertex &vertex, const bool add_index = false) {
-            _vertices.emplace_back(vertex);
-            if (add_index)
-                _indices.emplace_back(static_cast<int>(_vertices.size() - 1));
-        }
+        void Clear();
 
-        void Add(int index) {
-            _indices.emplace_back(index);
-        }
+        void Add(const Vertex &vertex, bool add_index = false);
+        void Add(int index);
 
-        [[nodiscard]] std::size_t VertexCount() const {
-            return _vertices.size();
-        }
-
-        [[nodiscard]] const SDL_Vertex *Vertices() const {
-            return _vertices.data();
-        }
-
-        [[nodiscard]] std::size_t IndexCount() const {
-            return _indices.size();
-        }
-
-        [[nodiscard]] const int *Indices() const {
-            return _indices.data();
-        }
+        [[nodiscard]] std::size_t VertexCount() const;
+        [[nodiscard]] const SDL_Vertex *Vertices() const;
+        [[nodiscard]] std::size_t IndexCount() const;
+        [[nodiscard]] const int *Indices() const;
     private:
         std::vector<SDL_Vertex> _vertices;
         std::vector<int> _indices;

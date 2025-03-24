@@ -57,6 +57,36 @@ namespace SDL {
             return Vector2(this->x / other, this->y / other);
         }
 
+        Vector2 &operator+=(const Vector2 &other) {
+            this->x += other.x;
+            this->y += other.y;
+            return *this;
+        }
+
+        Vector2 &operator-=(const Vector2 &other) {
+            this->x -= other.x;
+            this->y -= other.y;
+            return *this;
+        }
+
+        Vector2 &operator*=(const Vector2 &other) {
+            this->x *= other.x;
+            this->y *= other.y;
+            return *this;
+        }
+
+        Vector2 &operator*=(const T other) {
+            this->x *= other;
+            this->y *= other;
+            return *this;
+        }
+
+        Vector2 &operator/=(const T other) {
+            this->x /= other;
+            this->y /= other;
+            return *this;
+        }
+
         [[nodiscard]] T length() const {
             return sqrt(this->x * this->x + this->y * this->y);
         }
@@ -75,6 +105,11 @@ namespace SDL {
 
         bool operator!=(const Vector2 &other) const {
             return x != other.x || y != other.y;
+        }
+
+        void clear() {
+            this->x = 0;
+            this->y = 0;
         }
 
         T x;

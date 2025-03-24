@@ -1,6 +1,8 @@
 ﻿#ifndef SHAPES_HPP
 #define SHAPES_HPP
 
+#include <complex>
+
 #include "Drawable.hpp"
 #include "Rect.hpp"
 #include "Renderer.hpp"
@@ -8,34 +10,58 @@
 namespace SDL::Shapes {
     class Rectangle : public Drawable {
     public:
-        Rectangle()= default;
+        Rectangle();
+        Rectangle(const FVector2 &position, const FVector2 &size);
+        Rectangle(float x, float y, float w, float h);
+        explicit Rectangle(const Rect<float> &rect);
 
-        Rectangle(const FVector2 &position, const FVector2 &size): position(position), size(size) {
+        void SetPosition(FVector2 position);
+        [[nodiscard]] const FVector2 &GetPosition() const;
+        void SetSize(FVector2 size);
+        [[nodiscard]] const FVector2 &GetSize() const;
+        void SetRect(FRect rect);
+        [[nodiscard]] const FRect &GetRect() const;
+        void SetColor(Color color);
+        [[nodiscard]] const Color &GetColor() const;
 
-        }
-
-        Rectangle(const float x, const float y, const float w, const float h): position(x, y), size(w, h) {
-
-        }
-
-        explicit Rectangle(const Rect<float> &rect): Rectangle(rect.position, rect.size) {
-
-        }
-
-        FVector2 position;
-        FVector2 size;
-        Color color;
+        [[nodiscard]] bool Intersects(const Rectangle &other) const;
+        [[nodiscard]] bool Intersects(const FRect &other) const;
+        [[nodiscard]] std::optional<Rectangle> Intersection(const Rectangle &other) const;
+        [[nodiscard]] std::optional<Rectangle> Intersection(const FRect &other) const;
     private:
-        void Draw(Renderer &renderer) const override {
-            const SDL_Vertex vertices[4] = {
-                SDL_Vertex{position, FColor(color)},
-                SDL_Vertex{position + FVector2(size.x, 0), FColor(color)},
-                SDL_Vertex{position + FVector2(0, size.y), FColor(color)},
-                SDL_Vertex{position + size, FColor(color)},
-            };
-            const int indices[6] = {0, 2, 1, 1, 2, 3};
-            renderer.Draw(vertices, 4, indices, 6);
-        }
+        void Recompute();
+
+        FRect _rect;
+        Color _color;
+        SDL_Vertex _vertices[4];
+        constexpr static int indices[6] = {0, 1, 2, 2, 3, 1};
+        void Draw(Renderer &renderer) const override;
+    };
+
+    class Circle : public Drawable {
+    public:
+        Circle();
+        explicit Circle(float radius, int detail = 32);
+
+        void SetPosition(const FVector2 &position);
+        [[nodiscard]] FVector2 GetPosition() const;
+        void SetColor(Color color);
+        [[nodiscard]] Color GetColor() const;
+        void SetRadius(float radius);
+        [[nodiscard]] float GetRadius() const;
+        void SetDetail(int detail);
+        [[nodiscard]] int GetDetail() const;
+
+    private:
+        void Recompute();
+
+        int _detail;
+        float _radius;
+        Color _color;
+        FVector2 _position;
+        VertexBuffer _vertices;
+
+        void Draw(Renderer &renderer) const override;
     };
 }
 

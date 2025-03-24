@@ -24,6 +24,8 @@ add_executable(SDL main.cpp
         src/Timer.cpp
         src/Vertex.cpp
         src/Shapes.cpp
+        include/SDL/FramerateLimiter.hpp
+        src/FramerateLimiter.cpp
 )
 target_include_directories(SDL PUBLIC include)
 target_link_libraries(SDL SDL3 SDL3_image)

@@ -25,9 +25,18 @@ namespace SDL {
         VertexBuffer();
 
         void Clear();
+        void ClearVertices();
+        void ClearIndices();
 
         void Add(const Vertex &vertex, bool add_index = false);
         void Add(int index);
+
+        void Resize(std::size_t size);
+
+        [[nodiscard]] SDL_Vertex &GetVertex(std::size_t i);
+        [[nodiscard]] const SDL_Vertex &GetVertex(std::size_t i) const;
+
+        [[nodiscard]] const int &GetIndex(std::size_t i) const;
 
         [[nodiscard]] std::size_t VertexCount() const;
         [[nodiscard]] const SDL_Vertex *Vertices() const;

@@ -1,48 +1,76 @@
 #include "SDL/Vertex.hpp"
 
-SDL::Vertex::Vertex() = default;
+namespace SDL {
+    Vertex::Vertex() = default;
 
-SDL::Vertex::Vertex(const FVector2 &position, const Color &color, const FVector2 &textureCoord): position(position), color(color), texCoord(textureCoord) {
+    Vertex::Vertex(const FVector2 &position, const Color &color, const FVector2 &textureCoord): position(position), color(color), texCoord(textureCoord) {
 
-}
+    }
 
-SDL::Vertex::Vertex(const SDL_Vertex &vertex): position(vertex.position), color(vertex.color), texCoord(vertex.tex_coord) {
+    Vertex::Vertex(const SDL_Vertex &vertex): position(vertex.position), color(vertex.color), texCoord(vertex.tex_coord) {
 
-}
+    }
 
-SDL::Vertex::operator SDL_Vertex() const {
-    return {position, color, texCoord};
-}
+    Vertex::operator SDL_Vertex() const {
+        return {position, color, texCoord};
+    }
 
-SDL::VertexBuffer::VertexBuffer() = default;
+    VertexBuffer::VertexBuffer() = default;
 
-void SDL::VertexBuffer::Clear() {
-    _vertices.clear();
-    _indices.clear();
-}
+    void VertexBuffer::Clear() {
+        _vertices.clear();
+        _indices.clear();
+    }
 
-void SDL::VertexBuffer::Add(const Vertex &vertex, const bool add_index) {
-    _vertices.emplace_back(vertex);
-    if (add_index)
-        _indices.emplace_back(static_cast<int>(_vertices.size() - 1));
-}
+    void VertexBuffer::ClearVertices() {
+        _vertices.clear();
+    }
 
-void SDL::VertexBuffer::Add(int index) {
-    _indices.emplace_back(index);
-}
+    void VertexBuffer::ClearIndices() {
+        _indices.clear();
+    }
 
-std::size_t SDL::VertexBuffer::VertexCount() const {
-    return _vertices.size();
-}
+    void VertexBuffer::Add(const Vertex &vertex, const bool add_index) {
+        _vertices.emplace_back(vertex);
+        if (add_index)
+            _indices.emplace_back(static_cast<int>(_vertices.size() - 1));
+    }
 
-const SDL_Vertex *SDL::VertexBuffer::Vertices() const {
-    return _vertices.data();
-}
+    void VertexBuffer::Add(int index) {
+        _indices.emplace_back(index);
+    }
 
-std::size_t SDL::VertexBuffer::IndexCount() const {
-    return _indices.size();
-}
+    void VertexBuffer::Resize(const std::size_t size) {
+        _vertices.resize(size);
+    }
 
-const int *SDL::VertexBuffer::Indices() const {
-    return _indices.data();
+    SDL_Vertex &VertexBuffer::GetVertex(const std::size_t i) {
+        return _vertices[i];
+    }
+
+    const SDL_Vertex &VertexBuffer::GetVertex(const std::size_t i) const {
+        return _vertices[i];
+    }
+
+    const int &VertexBuffer::GetIndex(const std::size_t i) const {
+        return _indices[i];
+    }
+
+    std::size_t VertexBuffer::VertexCount() const {
+        return _vertices.size();
+    }
+
+    const SDL_Vertex *VertexBuffer::Vertices() const {
+        return _vertices.data();
+    }
+
+    std::size_t VertexBuffer::IndexCount() const {
+        return _indices.size();
+    }
+
+    const int *VertexBuffer::Indices() const {
+        if (_indices.empty())
+            return nullptr;
+        return _indices.data();
+    }
 }

@@ -5,105 +5,46 @@
 namespace SDL::Shapes {
     Rectangle::Rectangle() = default;
 
-    Rectangle::Rectangle(const FRect &rect): _rect(rect) {
-
-    }
-
-    Rectangle::Rectangle(const FVector2 &position, const FVector2 &size): _rect(position, size) {
-
-    }
-
-    Rectangle::Rectangle(const float x, const float y, const float w, const float h): _rect(x, y, w, h) {
-
-    }
-
-    void Rectangle::SetPosition(const FVector2 position) {
-        _rect.position = position;
+    Rectangle::Rectangle(const FVector2 &size): _size(size) {
         Recompute();
     }
 
-    const FVector2 &Rectangle::GetPosition() const {
-        return _rect.position;
-    }
-
-    void Rectangle::SetSize(const FVector2 size) {
-        _rect.size = size;
+    void Rectangle::SetSize(const FVector2 &size) {
+        _size = size;
         Recompute();
     }
 
-    const FVector2 &Rectangle::GetSize() const {
-        return _rect.size;
+    const FVector2 & Rectangle::GetSize() const {
+        return _size;
     }
 
-    void Rectangle::SetColor(const Color color) {
-        _color = color;
+    FVector2 Rectangle::GetCenter() const {
+        return _size / 2.0f;
+    }
+
+    FVector2 Rectangle::GetPoint(const std::size_t i) const {
+        switch (i) {
+            case 0:
+                return {0, 0};
+            case 1:
+                return {_size.x, 0};
+            case 2:
+                return _size;
+            case 3:
+                return {0, _size.y};
+            default:
+                return {};
+        }
+    }
+
+    std::size_t Rectangle::GetPointCount() const {
+        return 4;
+    }
+
+    Circle::Circle()= default;
+
+    Circle::Circle(const float radius, const unsigned int points): _radius(radius), _points(points) {
         Recompute();
-    }
-
-    const Color &Rectangle::GetColor() const {
-        return _color;
-    }
-
-    void Rectangle::SetRect(const FRect rect) {
-        _rect = rect;
-        Recompute();
-    }
-
-    const FRect &Rectangle::GetRect() const {
-        return _rect;
-    }
-
-    bool Rectangle::Intersects(const Rectangle &other) const {
-        return _rect.Intersects(other._rect);
-    }
-
-    bool Rectangle::Intersects(const FRect &other) const {
-        return _rect.Intersects(other);
-    }
-
-    std::optional<Rectangle> Rectangle::Intersection(const Rectangle &other) const {
-        if (const std::optional<FRect> rect = _rect.Intersection(other._rect))
-            return Rectangle(rect.value());
-        return std::nullopt;
-    }
-
-    std::optional<Rectangle> Rectangle::Intersection(const FRect &other) const {
-        if (const std::optional<FRect> rect = _rect.Intersection(other))
-            return Rectangle(rect.value());
-        return std::nullopt;
-    }
-
-    void Rectangle::Recompute() {
-        const SDL_FColor color = FColor(_color);
-        _vertices[0].position = _rect.position;
-        _vertices[0].color = color;
-        _vertices[1].position = _rect.position + FVector2(_rect.size.x, 0.0f);
-        _vertices[1].color = color;
-        _vertices[2].position = _rect.position + FVector2(0.0f, _rect.size.y);
-        _vertices[2].color = color;
-        _vertices[3].position = _rect.position + _rect.size;
-        _vertices[3].color = color;
-    }
-
-    void Rectangle::Draw(Renderer &renderer) const {
-        renderer.Draw(_vertices, 4, indices, 6);
-    }
-
-    Circle::Circle(): _detail(0), _radius(0) {
-
-    }
-
-    Circle::Circle(const float radius, const int detail): _detail(detail), _radius(radius) {
-        Recompute();
-    }
-
-    void Circle::SetPosition(const FVector2 &position) {
-        _position = position;
-        Recompute();
-    }
-
-    FVector2 Circle::GetPosition() const {
-        return _position;
     }
 
     void Circle::SetRadius(const float radius) {
@@ -111,49 +52,29 @@ namespace SDL::Shapes {
         Recompute();
     }
 
-    void Circle::SetColor(const Color color) {
-        _color = color;
-        Recompute();
-    }
-
-    Color Circle::GetColor() const {
-        return _color;
-    }
-
     float Circle::GetRadius() const {
         return _radius;
     }
 
-    void Circle::SetDetail(const int detail) {
-        _detail = detail;
+    void Circle::SetPoints(const unsigned int points) {
+        _points = points;
         Recompute();
     }
 
-    int Circle::GetDetail() const {
-        return _detail;
+    unsigned int Circle::GetPoints() const {
+        return _points;
     }
 
-    void Circle::Recompute() {
-        _vertices.Clear();
-        Vertex vertex;
-        vertex.position = _position;
-        vertex.color = _color;
-        _vertices.Add(vertex);
-        for (int i = 0; i < _detail; i++) {
-            vertex.position = _position + FVector2(static_cast<float>(std::cos(2 * M_PI * i / _detail)), static_cast<float>(std::sin(2 * M_PI * i / _detail))) * _radius;
-            _vertices.Add(vertex);
-            if (_vertices.VertexCount() > 2) {
-                _vertices.Add(0);
-                _vertices.Add(static_cast<int>(_vertices.VertexCount()) - 2);
-                _vertices.Add(static_cast<int>(_vertices.VertexCount()) - 1);
-            }
-        }
-        _vertices.Add(0);
-        _vertices.Add(1);
-        _vertices.Add(static_cast<int>(_vertices.VertexCount()) - 1);
+    FVector2 Circle::GetCenter() const {
+        return {_radius, _radius};
     }
 
-    void Circle::Draw(Renderer &renderer) const {
-        SDL_RenderGeometry(renderer, nullptr, _vertices.Vertices(), static_cast<int>(_vertices.VertexCount()), _vertices.Indices(), static_cast<int>(_vertices.IndexCount()));
+    FVector2 Circle::GetPoint(const std::size_t i) const {
+        const float a = static_cast<float>(i) / static_cast<float>(_points) * std::numbers::pi_v<float> * 2;
+        return FVector2(std::cos(a) * _radius, std::sin(a) * _radius) + FVector2(_radius, _radius);
+    }
+
+    std::size_t Circle::GetPointCount() const {
+        return _points;
     }
 }

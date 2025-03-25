@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <valarray>
+#include <SDL3/SDL_gpu.h>
 
 #include "SDL/Event.hpp"
 #include "SDL/Renderer.hpp"
@@ -12,6 +13,8 @@
 #include "SDL/Timer.hpp"
 #include "SDL/FramerateLimiter.hpp"
 #include "SDL/Matrix.hpp"
+#include "SDL/Transform.hpp"
+#include "SDL/Transformable.hpp"
 
 bool running = true;
 
@@ -34,17 +37,19 @@ int main() {
     SDL::Window window("Window!", {800, 600});
     SDL::Renderer renderer(window);
     SDL::FVector2 mouse;
-    SDL::FramerateLimiter limiter(60);
+    SDL::FramerateLimiter limiter(1000);
 
     SDL::Timer timer;
     float deltaTime = 0.0f;
+    float time = 0.0f;
 
-    constexpr SDL::FMatrix3x3 translation(
-        1, 0, 2,
-        0, 1, 5,
-        0, 0, 1
-    );
-    constexpr SDL::FVector2 vec2(translation * SDL::FMatrix3x3(SDL::FVector2(0, 1)));
+    SDL::Shapes::Circle shape(50);
+    shape.SetColor(SDL::Color::White);
+    shape.SetOrigin(SDL::FVector2(1.0f, 1.0f) * shape.GetRadius());
+    shape.SetPosition(SDL::FVector2(1.0f, 1.0f) * shape.GetRadius());
+
+    SDL::Shapes::Rectangle rect(shape.GetBoundingBox().size);
+    rect.SetColor(SDL::Color::Blue);
 
     while (running) {
         while (const std::optional<SDL::Event> event = SDL::PollEvent()) {
@@ -67,12 +72,14 @@ int main() {
         deltaTime = timer.Restart().AsSeconds();
         renderer.Clear(SDL::Color::Black);
 
-        SDL::Shapes::Circle circle(16);
+        time += deltaTime;
+        shape.SetRotation(time);
 
-        circle.SetPosition({96, 96});
-        circle.SetColor(SDL::Color::White);
+        rect.SetPosition(shape.GetBoundingBox().position);
+        rect.SetSize(shape.GetBoundingBox().size);
 
-        renderer.Draw(circle);
+        renderer.Draw(rect);
+        renderer.Draw(shape);
 
         renderer.Display();
         SDL::FramerateType framerate = limiter.Update();

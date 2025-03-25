@@ -63,55 +63,55 @@ namespace SDL {
         }
 
         [[nodiscard]] constexpr Matrix3x3 operator+(const Matrix3x3 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0] + b[0], a[1] + b[1], a[2] + b[2],
                     a[3] + b[3], a[4] + b[4], a[5] + b[5],
                     a[6] + b[6], a[7] + b[7], a[8] + b[8]};
         }
 
-        [[nodiscard]] constexpr Matrix3x3 &operator+=(const Matrix3x3 &other) {
+        constexpr Matrix3x3 &operator+=(const Matrix3x3 &other) {
             return *this = *this + other;
         }
 
         [[nodiscard]] constexpr Matrix3x3 operator-(const Matrix3x3 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0] - b[0], a[1] - b[1], a[2] - b[2],
                     a[3] - b[3], a[4] - b[4], a[5] - b[5],
                     a[6] - b[6], a[7] - b[7], a[8] - b[8]};
         }
 
-        [[nodiscard]] constexpr Matrix3x3 &operator-=(const Matrix3x3 &other) {
+        constexpr Matrix3x3 &operator-=(const Matrix3x3 &other) {
             return *this = *this - other;
         }
 
         [[nodiscard]] constexpr Matrix3x3 operator*(const Matrix3x3 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0] * b[0] + a[1] * b[3] + a[2] * b[6], a[0] * b[1] + a[1] * b[4] + a[2] * b[7], a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
                     a[3] * b[0] + a[4] * b[3] + a[5] * b[6], a[3] * b[1] + a[4] * b[4] + a[5] * b[7], a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
                     a[6] * b[0] + a[7] * b[3] + a[8] * b[6], a[6] * b[1] + a[7] * b[4] + a[8] * b[7], a[6] * b[2] + a[7] * b[5] + a[8] * b[8]};
         }
 
-        [[nodiscard]] constexpr Matrix3x3 &operator*=(const Matrix3x3 &other) {
+        constexpr Matrix3x3 &operator*=(const Matrix3x3 &other) {
             return *this = *this * other;
         }
 
         [[nodiscard]] constexpr Matrix3x3 operator*(const T &other) const {
-            T *a = _data;
+            const T *a = _data;
             const T &b = other;
             return {a[0] * b, a[1] * b, a[2] * b,
                     a[3] * b, a[4] * b, a[5] * b,
                     a[6] * b, a[7] * b, a[8] * b};
         }
 
-        [[nodiscard]] constexpr Matrix3x3 &operator*=(const T &other) {
+        constexpr Matrix3x3 &operator*=(const T &other) {
             return *this = *this * other;
         }
 
         [[nodiscard]] constexpr Matrix3x3 Transpose() const {
-            T *a = _data;
+            const T *a = _data;
             return {a[0], a[3], a[6],
                     a[1], a[4], a[7],
                     a[2], a[5], a[8]};
@@ -128,6 +128,10 @@ namespace SDL {
         constexpr explicit operator Vector2<T>() const {
             return {_data[0], _data[3]};
         }
+
+        static inline Matrix3x3 Identity{1, 0, 0,
+                                         0, 1, 0,
+                                         0, 0, 1};
     private:
         T _data[3 * 3];
     };
@@ -145,7 +149,7 @@ namespace SDL {
                 const T a4, const T b4, const T c4, const T d4): _data(a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4) {
 
         }
-        constexpr Matrix4x4(const Vector3<T> &vec3): Matrix4x4(
+        constexpr explicit Matrix4x4(const Vector3<T> &vec3): Matrix4x4(
                                             vec3.x, 0, 0, 0,
                                             vec3.y, 0, 0, 0,
                                             vec3.z, 0, 0, 0,
@@ -153,7 +157,7 @@ namespace SDL {
                                             ) {
 
         }
-        constexpr Matrix4x4(const Vector4<T> &vec4): Matrix4x4(
+        constexpr explicit Matrix4x4(const Vector4<T> &vec4): Matrix4x4(
                                             vec4.x, 0, 0, 0,
                                             vec4.y, 0, 0, 0,
                                             vec4.z, 0, 0, 0,
@@ -202,8 +206,8 @@ namespace SDL {
         }
 
         [[nodiscard]] constexpr Matrix4x4 operator+(const Matrix4x4 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0]  + b[0],  a[1]  + b[1],  a[2]  + b[2],  a[3]  + b[3],
                     a[4]  + b[4],  a[5]  + b[5],  a[6]  + b[6],  a[7]  + b[7],
                     a[8]  + b[8],  a[9]  + b[9],  a[10] + b[10], a[11] + b[11],
@@ -211,13 +215,13 @@ namespace SDL {
             };
         }
 
-        [[nodiscard]] constexpr Matrix4x4 &operator+=(const Matrix4x4 &other) {
+        constexpr Matrix4x4 &operator+=(const Matrix4x4 &other) {
             return *this = *this + other;
         }
 
         [[nodiscard]] constexpr Matrix4x4 operator-(const Matrix4x4 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0]  - b[0],  a[1]  - b[1],  a[2]  - b[2],  a[3]  - b[3],
                     a[4]  - b[4],  a[5]  - b[5],  a[6]  - b[6],  a[7]  - b[7],
                     a[8]  - b[8],  a[9]  - b[9],  a[10] - b[10], a[11] - b[11],
@@ -225,18 +229,22 @@ namespace SDL {
             };
         }
 
-        [[nodiscard]] constexpr Matrix4x4 &operator-=(const Matrix4x4 &other) {
+        constexpr Matrix4x4 &operator-=(const Matrix4x4 &other) {
             return *this = *this - other;
         }
 
         [[nodiscard]] constexpr Matrix4x4 operator*(const Matrix4x4 &other) const {
-            T *a = _data;
-            T *b = other._data;
+            const T *a = _data;
+            const T *b = other._data;
             return {a[0]  * b[0] + a[1]  * b[4] + a[2]  * b[8] +  a[3] * b[12], a[0]  * b[1] + a[1]  * b[5] + a[2]  * b[9] + a[3]  * b[13], a[0]  * b[2] + a[1]  * b[6] + a[2]  * b[10] + a[3]  * b[14], a[0]  * b[3] + a[1]  * b[7] + a[2]  * b[11] + a[3]  * b[15],
                     a[4]  * b[0] + a[5]  * b[4] + a[6]  * b[8] +  a[7] * b[12], a[4]  * b[1] + a[5]  * b[5] + a[6]  * b[9] + a[7]  * b[13], a[4]  * b[2] + a[5]  * b[6] + a[6]  * b[10] + a[7]  * b[14], a[4]  * b[3] + a[5]  * b[7] + a[6]  * b[11] + a[7]  * b[15],
                     a[8]  * b[0] + a[9]  * b[4] + a[10] * b[8] + a[11] * b[12], a[8]  * b[1] + a[9]  * b[5] + a[10] * b[9] + a[11] * b[13], a[8]  * b[2] + a[9]  * b[6] + a[10] * b[10] + a[11] * b[14], a[8]  * b[3] + a[9]  * b[7] + a[10] * b[11] + a[11] * b[15],
                     a[12] * b[0] + a[13] * b[4] + a[14] * b[8] + a[15] * b[12], a[12] * b[1] + a[13] * b[5] + a[14] * b[9] + a[15] * b[13], a[12] * b[2] + a[13] * b[6] + a[14] * b[10] + a[15] * b[14], a[12] * b[3] + a[13] * b[7] + a[14] * b[11] + a[15] * b[15],
             };
+        }
+
+        constexpr Matrix4x4 &operator*=(const T &other) {
+            return *this = *this * other;
         }
 
         [[nodiscard]] constexpr const T *Data() const {
@@ -251,12 +259,36 @@ namespace SDL {
             return {_data[0], _data[4], _data[8]};
         }
 
+        static inline Matrix4x4 Identity{1, 0, 0, 0,
+                                         0, 1, 0, 0,
+                                         0, 0, 1, 0,
+                                         0, 0, 0, 1};
     private:
         T _data[4 * 4];
     };
 
     typedef Matrix4x4<float> FMatrix4x4;
     typedef Matrix4x4<unsigned int> UMatrix4x4;
+
+    template <typename T>
+    constexpr Vector2<T> Apply(const Matrix3x3<T> &mat3, const Vector2<T> &vec2) {
+        return static_cast<Vector2<T>>(mat3 * Matrix3x3<T>(vec2));
+    }
+
+    template <typename T>
+    constexpr Vector3<T> Apply(const Matrix3x3<T> &mat3, const Vector3<T> &vec3) {
+        return static_cast<Vector3<T>>(mat3 * Matrix3x3<T>(vec3));
+    }
+
+    template <typename T>
+    constexpr Vector3<T> Apply(const Matrix4x4<T> &mat4, const Vector3<T> &vec3) {
+        return static_cast<Vector3<T>>(mat4 * Matrix4x3<T>(vec3));
+    }
+
+    template <typename T>
+    constexpr Vector4<T> Apply(const Matrix4x4<T> &mat4, const Vector4<T> &vec4) {
+        return static_cast<Vector4<T>>(mat4 * Matrix4x4<T>(vec4));
+    }
 }
 
 #endif //MATRIX_HPP

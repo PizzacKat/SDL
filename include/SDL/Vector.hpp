@@ -58,6 +58,10 @@ namespace SDL {
             return {x / other, y / other};
         }
 
+        constexpr Vector2 operator-() const {
+            return {-x, -y};
+        }
+
         constexpr Vector2 &operator+=(const Vector2 &other) {
             x += other.x;
             y += other.y;

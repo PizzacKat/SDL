@@ -33,6 +33,8 @@ add_executable(SDL main.cpp
         include/SDL/Transform.hpp
         src/Transform.cpp
         src/Transformable.cpp
+        include/SDL/Texture.hpp
+        src/Texture.cpp
 )
 target_include_directories(SDL PUBLIC include)
 target_link_libraries(SDL SDL3 SDL3_image)

@@ -1,45 +1,6 @@
 ﻿#include "SDL/Renderer.hpp"
-#include <SDL3_image/SDL_image.h>
 
 namespace SDL {
-    Texture::Texture() = default;
-
-    Texture::Texture(const std::nullptr_t) {
-
-    }
-
-    Texture::Texture(SDL_Texture *texture): _texture(texture, &SDL_DestroyTexture) {
-
-    }
-
-    void Texture::LoadFile(const Renderer &renderer, const std::string &file) {
-        _texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, file.c_str()), SDL_DestroyTexture);
-    }
-
-    FVector2 Texture::GetSize() const {
-        if (_texture == nullptr)
-            return {0, 0};
-        FVector2 size;
-        SDL_GetTextureSize(_texture.get(), &size.x, &size.y);
-        return size;
-    }
-
-    SDL_Texture *Texture::Get() const {
-        return _texture.get();
-    }
-
-    Texture::operator bool() const {
-        return _texture != nullptr;
-    }
-
-    bool Texture::operator==(const std::nullptr_t) const {
-        return _texture == nullptr;
-    }
-
-    Texture::operator SDL_Texture*() const {
-        return _texture.get();
-    }
-
     Renderer::Renderer(class Window &window): _window(&window), _renderer(SDL_CreateRenderer(window, nullptr)) {
         if (!_renderer)
             throw std::runtime_error("Failed to create renderer");
@@ -65,6 +26,20 @@ namespace SDL {
 
     Window &Renderer::Window() const {
         return *_window;
+    }
+
+    Texture *Renderer::Target() const {
+        return _target;
+    }
+
+    void Renderer::SetTarget(std::nullptr_t) {
+        SDL_SetRenderTarget(_renderer, nullptr);
+        _target = nullptr;
+    }
+
+    void Renderer::SetTarget(Texture &texture) {
+        SDL_SetRenderTarget(_renderer, texture.Get());
+        _target = &texture;
     }
 
     SDL_Renderer *Renderer::Get() const {
@@ -112,6 +87,32 @@ namespace SDL {
     void Renderer::Draw(const Drawable &drawable) {
         drawable.Draw(*this);
     }
+
+    void Renderer::SetViewport(const std::optional<Rect<>> &rect) {
+        if (rect) {
+            const SDL_Rect vp = rect.value();
+            SDL_SetRenderViewport(_renderer, &vp);
+        } else {
+            SDL_SetRenderViewport(_renderer, nullptr);
+        }
+    }
+
+    Rect<> Renderer::GetViewport() const {
+        SDL_Rect vp;
+        SDL_GetRenderViewport(_renderer, &vp);
+        return vp;
+    }
+
+    void Renderer::SetVSync(const bool enable) {
+        SDL_SetRenderVSync(_renderer, enable ? SDL_RENDERER_VSYNC_ADAPTIVE : SDL_RENDERER_VSYNC_DISABLED);
+    }
+
+    [[nodiscard]] bool Renderer::GetVSync() const {
+        int vsync;
+        SDL_GetRenderVSync(_renderer, &vsync);
+        return vsync == SDL_RENDERER_VSYNC_ADAPTIVE;
+    }
+
 
     void Renderer::Display() {
         SDL_RenderPresent(_renderer);

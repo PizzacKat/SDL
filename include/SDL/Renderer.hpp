@@ -6,31 +6,12 @@
 
 #include "Color.hpp"
 #include "Drawable.hpp"
+#include "Rect.hpp"
+#include "Texture.hpp"
 #include "Vector.hpp"
 #include "Vertex.hpp"
 
 namespace SDL {
-    class Renderer;
-
-    class Texture {
-    public:
-        Texture();
-        Texture(const std::nullptr_t);
-        Texture(SDL_Texture *texture);
-
-        void LoadFile(const Renderer &renderer, const std::string &file);
-
-        [[nodiscard]] FVector2 GetSize() const;
-        [[nodiscard]] SDL_Texture *Get() const;
-
-        explicit operator bool() const;
-        bool operator==(const std::nullptr_t) const;
-
-        operator SDL_Texture *() const;
-    private:
-        std::shared_ptr<SDL_Texture> _texture = nullptr;
-    };
-
     class Renderer {
     public:
         explicit Renderer(class Window &window);
@@ -44,13 +25,15 @@ namespace SDL {
         Renderer &operator=(Renderer &&renderer) noexcept;
 
         [[nodiscard]] class Window &Window() const;
+        [[nodiscard]] Texture *Target() const;
+
+        void SetTarget(std::nullptr_t);
+        void SetTarget(Texture &texture);
 
         [[nodiscard]] SDL_Renderer *Get() const;
-
         operator SDL_Renderer *() const;
 
         void SetDrawColor(const Color &color);
-
         [[nodiscard]] Color GetDrawColor() const;
 
         void Clear();
@@ -61,11 +44,18 @@ namespace SDL {
         void Draw(const VertexBuffer &vertices, const Texture &texture = nullptr);
         void Draw(const Drawable &drawable);
 
+        void SetViewport(const std::optional<Rect<>> &rect);
+        [[nodiscard]] Rect<> GetViewport() const;
+
+        void SetVSync(bool enable);
+        [[nodiscard]] bool GetVSync() const;
+
         void Display();
 
         ~Renderer();
 
     private:
+        Texture *_target = nullptr;
         class Window *_window;
         SDL_Renderer *_renderer;
     };

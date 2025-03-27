@@ -25,14 +25,6 @@ constexpr SDL::Vector2<T> Rotate90(const SDL::Vector2<T> &vector) {
     return {-vector.y, vector.x};
 }
 
-template <std::size_t N, typename Func, typename ...Args>
-constexpr auto iterate(Func &&func, Args &&...args) {
-    if constexpr (N == 1)
-        return func(std::forward<Args>(args)...);
-    else
-        return iterate<N - 1>(func, func(std::forward<Args>(args)...));
-}
-
 int main() {
     SDL::Window window("Window!", {800, 600});
     SDL::Renderer renderer(window);

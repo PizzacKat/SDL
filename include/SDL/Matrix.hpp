@@ -243,8 +243,33 @@ namespace SDL {
             };
         }
 
+        constexpr Matrix4x4 &operator*=(const Matrix4x4 &other) {
+            return *this = *this * other;
+        }
+
+        [[nodiscard]] constexpr Matrix4x4 operator*(T other) const {
+            const T *a = _data;
+            const T &b = other;
+            return {
+                a[0]  * b, a[1]  * b, a[2]  * b, a[3]  * b,
+                a[4]  * b, a[5]  * b, a[6]  * b, a[7]  * b,
+                a[8]  * b, a[9]  * b, a[10] * b, a[11] * b,
+                a[12] * b, a[13] * b, a[14] * b, a[15] * b
+            };
+        }
+
         constexpr Matrix4x4 &operator*=(const T &other) {
             return *this = *this * other;
+        }
+
+        [[nodiscard]] constexpr Matrix4x4 Transpose() const {
+            const T *a = _data;
+            return {
+                a[0], a[4],  a[8], a[12],
+                a[1], a[5],  a[9], a[13],
+                a[2], a[6], a[10], a[14],
+                a[3], a[7], a[11], a[15]
+            };
         }
 
         [[nodiscard]] constexpr const T *Data() const {

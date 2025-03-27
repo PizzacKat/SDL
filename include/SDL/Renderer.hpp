@@ -8,7 +8,6 @@
 #include "Drawable.hpp"
 #include "Rect.hpp"
 #include "Texture.hpp"
-#include "Vector.hpp"
 #include "Vertex.hpp"
 
 namespace SDL {
@@ -46,6 +45,9 @@ namespace SDL {
 
         void SetViewport(const std::optional<Rect<>> &rect);
         [[nodiscard]] Rect<> GetViewport() const;
+
+        void SetClipRect(const std::optional<Rect<>> &rect);
+        [[nodiscard]] Rect<> GetClipRect() const;
 
         void SetVSync(bool enable);
         [[nodiscard]] bool GetVSync() const;

@@ -1,7 +1,5 @@
 #include "SDL/Shapes.hpp"
 
-#include <iostream>
-
 namespace SDL::Shapes {
     Rectangle::Rectangle() = default;
 
@@ -14,7 +12,7 @@ namespace SDL::Shapes {
         Recompute();
     }
 
-    const FVector2 & Rectangle::GetSize() const {
+    const FVector2 &Rectangle::GetSize() const {
         return _size;
     }
 

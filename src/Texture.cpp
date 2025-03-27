@@ -1,4 +1,6 @@
 #include "SDL/Texture.hpp"
+
+#include "SDL/Error.hpp"
 #include "SDL/Renderer.hpp"
 #include "SDL3_image/SDL_image.h"
 
@@ -17,6 +19,8 @@ namespace SDL {
         if (_texture != nullptr)
             SDL_DestroyTexture(_texture);
         _texture = SDL_CreateTexture(renderer, format, access, static_cast<int>(size.x), static_cast<int>(size.y));
+        if (_texture == nullptr)
+            Error::Throw("SDL_CreateTexture");
     }
 
     void Texture::LoadFile(const Renderer &renderer, const std::string &file) {
@@ -29,7 +33,8 @@ namespace SDL {
         if (_texture == nullptr)
             return {0, 0};
         FVector2 size;
-        SDL_GetTextureSize(_texture, &size.x, &size.y);
+        if (!SDL_GetTextureSize(_texture, &size.x, &size.y))
+            Error::Throw("SDL_GetTextureSize");
         return size;
     }
 
@@ -39,12 +44,14 @@ namespace SDL {
 
     void Texture::Update(const Rect<> rect, const void *pixels, const int pitch) {
         const SDL_Rect sdl_rect = rect;
-        SDL_UpdateTexture(_texture, &sdl_rect, pixels, pitch);
+        if (!SDL_UpdateTexture(_texture, &sdl_rect, pixels, pitch))
+            Error::Throw("SDL_UpdateTexture");
     }
 
     void Texture::Lock(const Rect<> rect, void **pixels, int &pitch) {
         const SDL_Rect sdl_rect = rect;
-        SDL_LockTexture(_texture, &sdl_rect, pixels, &pitch);
+        if (!SDL_LockTexture(_texture, &sdl_rect, pixels, &pitch))
+            Error::Throw("SDL_LockTexture");
     }
 
     void Texture::Unlock() {

@@ -40,6 +40,10 @@ namespace SDL {
         _indices.emplace_back(index);
     }
 
+    void VertexBuffer::Add(const std::initializer_list<int> indices) {
+        _indices.insert(_indices.end(), indices.begin(), indices.end());
+    }
+
     void VertexBuffer::Resize(const std::size_t size) {
         _vertices.resize(size);
     }

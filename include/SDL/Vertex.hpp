@@ -30,6 +30,7 @@ namespace SDL {
 
         void Add(const Vertex &vertex, bool add_index = false);
         void Add(int index);
+        void Add(std::initializer_list<int> indices);
 
         void Resize(std::size_t size);
 

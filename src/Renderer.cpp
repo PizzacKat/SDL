@@ -2,47 +2,54 @@
 #include "SDL/Error.hpp"
 
 namespace SDL {
-    Renderer::Renderer(class Window &window): _window(&window), _renderer(SDL_CreateRenderer(window, nullptr)) {
+    Renderer::Renderer(class Window &window): _renderer(SDL_CreateRenderer(window, nullptr)) {
         if (!_renderer)
             Error::Throw("SDL_CreateRenderer");
     }
 
-    Renderer::Renderer(class Window &window, const std::string &name): _window(&window), _renderer(SDL_CreateRenderer(window, name.c_str())) {
+    Renderer::Renderer(const Properties &properties): _renderer(SDL_CreateRendererWithProperties(properties)) {
         if (!_renderer)
-            Error::Throw("SDL_CreateRenderer");
+            Error::Throw("SDL_CreateRendererWithProperties");
     }
 
-    Renderer::Renderer(Renderer &&renderer) noexcept: _window(renderer._window), _renderer(renderer._renderer) {
-        renderer._renderer = nullptr;
+    Renderer::Renderer(Renderer &&renderer) noexcept: _renderer(std::move(renderer._renderer)) {
+
     }
 
-    Renderer & Renderer::operator=(Renderer &&renderer) noexcept {
-        if (_renderer)
-            SDL_DestroyRenderer(_renderer);
-        _window = renderer._window;
-        _renderer = renderer._renderer;
-        renderer._renderer = nullptr;
+    Renderer &Renderer::operator=(Renderer &&renderer) noexcept {
+        _renderer = std::move(renderer._renderer);
         return *this;
     }
 
-    Window &Renderer::Window() const {
-        return *_window;
+    Renderer::Renderer(const class Window &window, const std::string &name): _renderer(SDL_CreateRenderer(window, name.c_str())) {
+        if (!_renderer)
+            Error::Throw("SDL_CreateRenderer");
     }
 
-    Texture *Renderer::Target() const {
-        return _target;
+    Renderer::Renderer(SDL_Renderer *renderer): _renderer(renderer) {
+
+    }
+
+    Renderer::Renderer(SDL_Renderer *renderer, const Borrowed borrowed): _renderer(renderer, borrowed) {
+
+    }
+
+    Window Renderer::GetWindow() const {
+        return {SDL_GetRenderWindow(_renderer), Borrowed()};
+    }
+
+    Texture Renderer::Target() const {
+        return {SDL_GetRenderTarget(_renderer), Borrowed()};
     }
 
     void Renderer::SetTarget(std::nullptr_t) {
         if (!SDL_SetRenderTarget(_renderer, nullptr))
             Error::Throw("SDL_SetRenderTarget");
-        _target = nullptr;
     }
 
     void Renderer::SetTarget(Texture &texture) {
         if (!SDL_SetRenderTarget(_renderer, texture.Get()))
             Error::Throw("SDL_SetRenderTarget");
-        _target = &texture;
     }
 
     SDL_Renderer *Renderer::Get() const {
@@ -147,14 +154,15 @@ namespace SDL {
         return vsync == SDL_RENDERER_VSYNC_ADAPTIVE;
     }
 
-
     void Renderer::Display() {
         if (!SDL_RenderPresent(_renderer))
             Error::Throw("SDL_RenderPresent");
     }
 
-    Renderer::~Renderer() {
-        if (_renderer)
-            SDL_DestroyRenderer(_renderer);
+    Properties Renderer::GetProperties() const {
+        const SDL_PropertiesID id = SDL_GetRendererProperties(_renderer);
+        if (id == 0)
+            Error::Throw("SDL_GetRendererProperties");
+        return {id, Borrowed()};
     }
 }

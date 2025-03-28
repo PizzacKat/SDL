@@ -15,6 +15,10 @@
 #include "SDL/Matrix.hpp"
 #include "SDL/Transform.hpp"
 #include "SDL/Transformable.hpp"
+#include <array>
+#include <SDL3/SDL_hints.h>
+
+#include "SDL/Surface.hpp"
 
 bool running = true;
 
@@ -41,10 +45,11 @@ public:
         return *this *= matrix;
     }
 
-    Transform3D &Rotate(const SDL::FVector3 &euler) {
+    Transform3D &Rotate(SDL::FVector3 euler) {
+        euler *= std::numbers::pi_v<float> / 180.0f;
         const SDL::FMatrix4x4 matrixZ(
-            std::cos(euler.x), -std::sin(euler.x), 0, 0,
-            std::sin(euler.x),  std::cos(euler.x), 0, 0,
+            std::cos(euler.z), -std::sin(euler.z), 0, 0,
+            std::sin(euler.z),  std::cos(euler.z), 0, 0,
                             0,                  0, 1, 0,
                             0,                  0, 0, 1
         );
@@ -56,8 +61,8 @@ public:
         );
         const SDL::FMatrix4x4 matrixX(
             1,                 0,                  0, 0,
-            0, std::cos(euler.z), -std::sin(euler.z), 0,
-            0, std::sin(euler.z),  std::cos(euler.z), 0,
+            0, std::cos(euler.x), -std::sin(euler.x), 0,
+            0, std::sin(euler.x),  std::cos(euler.x), 0,
             0,                 0,                  0, 1
         );
 
@@ -146,11 +151,54 @@ private:
     float _fov;
 };
 
+void RenderFace(SDL::Renderer &renderer,
+    const SDL::FVector2 p1,
+    const SDL::FVector2 p2,
+    const SDL::FVector2 p3,
+    const SDL::FVector2 p4,
+    const SDL::Color &color,
+    const SDL::FVector2 uv1 = {},
+    const SDL::FVector2 uv2 = {},
+    const SDL::FVector2 uv3 = {},
+    const SDL::FVector2 uv4 = {}, const SDL::Texture &texture = nullptr) {
+    const SDL_Vertex vertices[4] = {
+        SDL::Vertex{p1, color, uv1},
+        SDL::Vertex{p2, color, uv2},
+        SDL::Vertex{p3, color, uv3},
+        SDL::Vertex{p4, color, uv4}
+    };
+    const int indices[6] = {
+        0, 2, 1, 1, 2, 3
+    };
+
+    renderer.Draw(vertices, 4, indices, 6, texture);
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const SDL::Vector2<T> &position) {
+    os << "(" << position.x << ", " << position.y << ")";
+    return os;
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const SDL::Vector3<T> &position) {
+    os << "(" << position.x << ", " << position.y << ", " << position.z << ")";
+    return os;
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const SDL::Vector4<T> &position) {
+    os << "(" << position.x << ", " << position.y << ", " << position.z << ", " << position.w << ")";
+    return os;
+}
+
 int main() {
-    SDL::Window window("Window!", {900, 900}, SDL_WINDOW_TRANSPARENT | SDL_WINDOW_RESIZABLE);
+    SDL::Window window("Window!", {260, 260}, SDL_WINDOW_TRANSPARENT | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_UTILITY);
     SDL::Renderer renderer(window);
     SDL::FVector2 mouse;
-    SDL::FramerateLimiter limiter(1000);
+    SDL::FramerateLimiter limiter(240);
+    SDL::Texture faceTexture;
+    faceTexture.LoadFile(renderer, "texture.png");
 
     SDL::Timer timer;
     float deltaTime = 0.0f;
@@ -162,29 +210,48 @@ int main() {
         {0, 1, 1}, {0, 0, 1}
     };
 
-    SDL::VertexBuffer buffer;
-
-    std::array<int, 4> faces[] = {
-        {0, 1, 3, 4},
-        {1, 2, 0, 7},
-        {0, 7, 3, 6},
-        {7, 2, 6, 5},
-        {1, 2, 4, 5},
-        {3, 4, 6, 5}
+    const std::array<std::pair<int, SDL::FVector2>, 4> faces[6] = {
+        {
+            std::pair{0, SDL::FVector2{1.0 / 4, 2.0 / 3}},
+            std::pair{1, SDL::FVector2{2.0 / 4, 2.0 / 3}},
+            std::pair{3, SDL::FVector2{1.0 / 4, 1.0 / 3}},
+            std::pair{4, SDL::FVector2{2.0 / 4, 1.0 / 3}}
+        },
+        {
+            std::pair{1, SDL::FVector2{2.0 / 4, 0.0 / 3}},
+            std::pair{2, SDL::FVector2{2.0 / 4, 1.0 / 3}},
+            std::pair{0, SDL::FVector2{1.0 / 4, 0.0 / 3}},
+            std::pair{7, SDL::FVector2{1.0 / 4, 1.0 / 3}}
+        },
+        {
+            std::pair{0, SDL::FVector2{1.0 / 4, 2.0 / 3}},
+            std::pair{7, SDL::FVector2{0.0 / 4, 2.0 / 3}},
+            std::pair{3, SDL::FVector2{1.0 / 4, 1.0 / 3}},
+            std::pair{6, SDL::FVector2{0.0 / 4, 1.0 / 3}}
+        },
+        {
+            std::pair{2, SDL::FVector2{3.0 / 4, 2.0 / 3}},
+            std::pair{7, SDL::FVector2{4.0 / 4, 2.0 / 3}},
+            std::pair{5, SDL::FVector2{3.0 / 4, 1.0 / 3}},
+            std::pair{6, SDL::FVector2{4.0 / 4, 1.0 / 3}}
+        },
+        {
+            std::pair{1, SDL::FVector2{2.0 / 4, 2.0 / 3}},
+            std::pair{2, SDL::FVector2{3.0 / 4, 2.0 / 3}},
+            std::pair{4, SDL::FVector2{2.0 / 4, 1.0 / 3}},
+            std::pair{5, SDL::FVector2{3.0 / 4, 1.0 / 3}}
+        },
+        {
+            std::pair{3, SDL::FVector2{1.0 / 4, 3.0 / 3}},
+            std::pair{4, SDL::FVector2{2.0 / 4, 3.0 / 3}},
+            std::pair{6, SDL::FVector2{1.0 / 4, 2.0 / 3}},
+            std::pair{5, SDL::FVector2{2.0 / 4, 2.0 / 3}}
+        },
     };
 
-    float distances[8] {};
+    bool mouseDown = false;
 
-    SDL::Color color[8] {
-        SDL::Color::Blue,
-        SDL::Color::Green,
-        SDL::Color::Red,
-        SDL::Color::Yellow,
-        SDL::Color::White,
-        SDL::Color::Blue,
-        SDL::Color::Green,
-        SDL::Color::White
-    };
+    SDL::FVector2 grabPos;
 
     while (running) {
         View3D view;
@@ -193,65 +260,78 @@ int main() {
                 case SDL_EVENT_QUIT:
                     running = false;
                 break;
-                case SDL_EVENT_MOUSE_MOTION:
-                    mouse.x = event->motion.x;
-                    mouse.y = event->motion.y;
-                break;
                 case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                    mouseDown = true;
+                    SDL_GetGlobalMouseState(&grabPos.x, &grabPos.y);
+                    grabPos -= window.GetPosition();
                 break;
                 case SDL_EVENT_MOUSE_BUTTON_UP:
+                    mouseDown = false;
                 break;
                 default:
                 break;
             }
         }
         deltaTime = timer.Restart().AsSeconds();
+
+        if (mouseDown) {
+            SDL_GetGlobalMouseState(&mouse.x, &mouse.y);
+            window.SetPosition(mouse - grabPos);
+        }
+
         renderer.Clear(SDL::Color::Transparent);
 
         time += deltaTime;
 
-        buffer.ClearVertices();
-
         Transform3D transform;
         transform *= view.GetMatrix();
 
-        transform.Translate({0, 0, -6});
-        transform.Rotate({0, time, 0});
-        transform.Scale({1, 1, 1});
+        transform.Translate({0, 0, 6});
+        transform.Rotate({-15, 0, 0});
+        transform.Rotate({0, time * 60, 0});
+        transform.Scale({1, 1, -1});
         transform.Translate({-0.5, -0.5, -0.5});
+
+        SDL::FVector3 viewPoints[8];
 
         for (std::size_t i = 0; i < 8; ++i) {
             SDL::FVector4 vec4(points[i], 1.0f);
             vec4 = transform.Apply(vec4);
-            distances[i] = vec4.z;
             vec4.x /= vec4.w;
             vec4.y /= vec4.w;
             vec4.z /= vec4.w;
-            buffer.Add(SDL::Vertex(SDL::FVector2(SDL::FVector3(vec4)) + window.GetSize() / 2.0f, color[i]));
+            viewPoints[i] = SDL::FVector3(SDL::FVector3(vec4) + SDL::FVector3(window.GetSize()) / 2.0f);
         }
 
-        std::pair<float, std::array<int, 4>> fack[6];
+        std::array<std::pair<SDL::FVector3, SDL::FVector2>, 4> vertexFaces[6];
 
-        for (std::size_t i = 0; i < 6; ++i) {
-            float avgDist = (distances[faces[i][0]] + distances[faces[i][1]] + distances[faces[i][2]] + distances[faces[i][3]]);
-            fack[i] = std::make_pair(avgDist, faces[i]);
+        for (std::size_t j = 0; j < 4; ++j) {
+            for (std::size_t i = 0; i < 6; ++i) {
+                vertexFaces[i][j] = {viewPoints[faces[i][j].first], faces[i][j].second};
+            }
         }
 
-        std::ranges::sort(fack, [](const auto &a, const auto &b) { return a.first > b.first; });
+        std::ranges::sort(vertexFaces, [](const auto &a, const auto &b) {
+            float dA = (a[0].first + a[1].first + a[2].first + a[3].first).z;
+            float dB = (b[0].first + b[1].first + b[2].first + b[3].first).z;
+            return dB > dA;
+        });
 
-        buffer.ClearIndices();
-
-        for (const auto &[_, values] : fack) {
-            buffer.Add(values[0]);
-            buffer.Add(values[2]);
-            buffer.Add(values[1]);
-            buffer.Add(values[1]);
-            buffer.Add(values[2]);
-            buffer.Add(values[3]);
+        renderer.SetDrawColor(SDL::Color::Black);
+        for (const auto &vertices : vertexFaces) {
+            const auto p1 = vertices[0].first;
+            const auto p2 = vertices[1].first;
+            const auto p3 = vertices[2].first;
+            const auto p4 = vertices[3].first;
+            const auto centroid = (p1 + p2 + p3 + p4) / 4.0f;
+            RenderFace(renderer,
+                SDL::FVector2((p1 - centroid) * 1.05f + centroid),
+                SDL::FVector2((p2 - centroid) * 1.05f + centroid),
+                SDL::FVector2((p3 - centroid) * 1.05f + centroid),
+                SDL::FVector2((p4 - centroid) * 1.05f + centroid),
+                SDL::Color::Black);
+            RenderFace(renderer, SDL::FVector2(p1), SDL::FVector2(p2), SDL::FVector2(p3), SDL::FVector2(p4), SDL::Color::White, vertices[0].second, vertices[1].second, vertices[2].second, vertices[3].second, faceTexture);
         }
-
-        renderer.Draw(buffer);
-
         renderer.Display();
         SDL::FramerateType framerate = limiter.Update();
         window.SetTitle(std::to_string(framerate));

@@ -17,6 +17,8 @@ namespace SDL {
         Color &operator+=(const Color &other);
         Color &operator-=(const Color &other);
 
+        [[nodiscard]] Uint32 AsInt() const;
+
         operator SDL_Color() const;
 
         unsigned char r, g, b, a;

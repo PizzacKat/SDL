@@ -7,11 +7,19 @@
 namespace SDL {
     Texture::Texture() = default;
 
-    Texture::Texture(const std::nullptr_t) {
+    Texture::Texture(Texture &&texture) noexcept: _texture(std::move(texture._texture)) {
+    }
 
+    Texture &Texture::operator=(Texture &&texture) noexcept {
+        _texture = std::move(texture._texture);
+        return *this;
     }
 
     Texture::Texture(SDL_Texture *texture): _texture(texture) {
+
+    }
+
+    Texture::Texture(SDL_Texture *texture, const Borrowed borrowed): _texture(texture, borrowed) {
 
     }
 
@@ -68,10 +76,5 @@ namespace SDL {
 
     Texture::operator SDL_Texture*() const {
         return _texture;
-    }
-
-    Texture::~Texture() {
-        if (_texture != nullptr)
-            SDL_DestroyTexture(_texture);
     }
 }

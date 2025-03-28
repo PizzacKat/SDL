@@ -5,6 +5,7 @@
 #include <string>
 #include <SDL3/SDL_render.h>
 
+#include "APIObject.hpp"
 #include "Rect.hpp"
 #include "Vector.hpp"
 
@@ -14,12 +15,11 @@ namespace SDL {
     class Texture {
     public:
         Texture();
-        Texture(const Texture &) = delete;
-        Texture &operator=(const Texture &) = delete;
         Texture(Texture &&texture) noexcept;
         Texture &operator=(Texture &&texture) noexcept;
-        Texture(std::nullptr_t);
+
         Texture(SDL_Texture *texture);
+        Texture(SDL_Texture *texture, Borrowed borrowed);
 
         void Create(const Renderer &renderer, const UVector2 &size, SDL_PixelFormat format = SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess access = SDL_TEXTUREACCESS_STATIC);
         void LoadFile(const Renderer &renderer, const std::string &file);
@@ -35,10 +35,8 @@ namespace SDL {
         bool operator==(std::nullptr_t) const;
 
         operator SDL_Texture *() const;
-
-        ~Texture();
     private:
-        SDL_Texture *_texture = nullptr;
+        Object::APIObject<SDL_Texture *> _texture = nullptr;
     };
 }
 

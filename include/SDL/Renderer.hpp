@@ -1,30 +1,32 @@
 ﻿#ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include <memory>
-#include <SDL3/SDL_render.h>
-#include <SDL/Window.hpp>
+#include "Window.hpp"
 
 #include "Color.hpp"
 #include "Drawable.hpp"
+#include "Properties.hpp"
 #include "Rect.hpp"
 #include "Texture.hpp"
 #include "Vertex.hpp"
+#include "APIObject.hpp"
 
 namespace SDL {
     class Renderer {
     public:
-        explicit Renderer(class Window &window);
-
-        Renderer(class Window &window, const std::string &name);
-
-        Renderer(Renderer &)= delete;
-        Renderer &operator=(Renderer &)= delete;
         Renderer(Renderer &&renderer) noexcept;
-
         Renderer &operator=(Renderer &&renderer) noexcept;
 
-        [[nodiscard]] class Window &Window() const;
-        [[nodiscard]] Texture *Target() const;
+        explicit Renderer(class Window &window);
+        Renderer(const class Window &window, const std::string &name);
+        explicit Renderer(const Properties &properties);
+
+        Renderer(SDL_Renderer *renderer);
+        Renderer(SDL_Renderer *renderer, Borrowed borrowed);
+
+        [[nodiscard]] Window GetWindow() const;
+
+        [[nodiscard]] Texture Target() const;
 
         void SetTarget(std::nullptr_t);
         void SetTarget(Texture &texture);
@@ -54,12 +56,9 @@ namespace SDL {
 
         void Display();
 
-        ~Renderer();
-
+        [[nodiscard]] Properties GetProperties() const;
     private:
-        Texture *_target = nullptr;
-        class Window *_window;
-        SDL_Renderer *_renderer;
+        Object::APIObject<SDL_Renderer *> _renderer;
     };
 }
 

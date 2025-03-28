@@ -55,6 +55,10 @@ namespace SDL {
         return *this = *this - other;
     }
 
+    Uint32 Color::AsInt() const {
+        return r << 24 | g << 16 | b << 8 | a;
+    }
+
     Color::operator SDL_Color() const {
         return {r, g, b, a};
     }

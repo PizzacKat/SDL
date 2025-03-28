@@ -37,6 +37,11 @@ add_executable(SDL main.cpp
         src/Texture.cpp
         include/SDL/Error.hpp
         src/Error.cpp
+        include/SDL/Surface.hpp
+        src/Surface.cpp
+        include/SDL/Properties.hpp
+        src/Properties.cpp
+        include/SDL/APIObject.hpp
 )
 target_include_directories(SDL PUBLIC include)
 target_link_libraries(SDL SDL3 SDL3_image)

@@ -1,21 +1,22 @@
 ﻿#ifndef WINDOW_HPP
 #define WINDOW_HPP
-#include <stdexcept>
 #include <string>
 #include <SDL3/SDL_video.h>
 
+#include "APIObject.hpp"
+#include "Surface.hpp"
 #include "Vector.hpp"
 
 namespace SDL {
     class Window {
     public:
-        Window(const std::string &title, const Vector2<> &size, SDL_WindowFlags flags = 0);
-
-        Window(const Window &)= delete;
-        Window &operator=(const Window &) = delete;
         Window(Window &&window) noexcept;
 
         Window &operator=(Window &&window) noexcept;
+        Window(const std::string &title, const Vector2<> &size, SDL_WindowFlags flags = 0);
+
+        Window(SDL_Window *window);
+        Window(SDL_Window *window, Borrowed borrowed);
 
         [[nodiscard]] SDL_Window *Get() const;
 
@@ -30,9 +31,9 @@ namespace SDL {
         void SetPosition(const Vector2<> &position);
         [[nodiscard]] Vector2<> GetPosition() const;
 
-        ~Window();
+        void SetShape(const Surface &shape);
     private:
-        SDL_Window *_window;
+        Object::APIObject<SDL_Window *> _window;
     };
 }
 

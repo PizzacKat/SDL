@@ -7,15 +7,19 @@ namespace SDL {
             Error::Throw("SDL_CreateWindow");
     }
 
-    Window::Window(Window &&window) noexcept: _window(window._window) {
-        window._window = nullptr;
+    Window::Window(SDL_Window *window): _window(window) {
+
+    }
+
+    Window::Window(SDL_Window *window, const Borrowed borrowed): _window(window, borrowed) {
+
+    }
+
+    Window::Window(Window &&window) noexcept: _window(std::move(window._window)) {
     }
 
     Window &Window::operator=(Window &&window) noexcept {
-        if (_window)
-            SDL_DestroyWindow(_window);
-        _window = window._window;
-        window._window = nullptr;
+        _window = std::move(window._window);
         return *this;
     }
 
@@ -60,8 +64,8 @@ namespace SDL {
         return position;
     }
 
-    Window::~Window() {
-        if (_window)
-            SDL_DestroyWindow(_window);
+    void Window::SetShape(const Surface &shape) {
+        if (!SDL_SetWindowShape(_window, shape))
+            Error::Throw("SDL_SetWindowShape");
     }
 }

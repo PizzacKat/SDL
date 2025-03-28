@@ -31,6 +31,10 @@ namespace SDL::Error {
     inline void Throw(const std::string &function) {
         callback(function, SDL_GetError());
     }
+
+    inline void Throw(const std::string &function, const char *msg) {
+        callback(function, msg);
+    }
 }
 
 #endif //ERROR_HPP

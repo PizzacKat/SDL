@@ -250,8 +250,12 @@ int main() {
     };
 
     bool mouseDown = false;
+    bool cameraDown = false;
 
     SDL::FVector2 grabPos;
+    SDL::FVector3 cameraRot{-15, 0, 0};
+
+    float cameraSens = 0.5f;
 
     while (running) {
         View3D view;
@@ -261,12 +265,18 @@ int main() {
                     running = false;
                 break;
                 case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                    mouseDown = true;
                     SDL_GetGlobalMouseState(&grabPos.x, &grabPos.y);
+                if (event->button.button == SDL_BUTTON_LEFT) {
+                    mouseDown = true;
                     grabPos -= window.GetPosition();
+                } else if (event->button.button == SDL_BUTTON_RIGHT)
+                    cameraDown = true;
                 break;
                 case SDL_EVENT_MOUSE_BUTTON_UP:
-                    mouseDown = false;
+                    if (event->button.button == SDL_BUTTON_LEFT)
+                        mouseDown = false;
+                    else if (event->button.button == SDL_BUTTON_RIGHT)
+                        cameraDown = false;
                 break;
                 default:
                 break;
@@ -279,6 +289,12 @@ int main() {
             window.SetPosition(mouse - grabPos);
         }
 
+        if (cameraDown) {
+            SDL_GetGlobalMouseState(&mouse.x, &mouse.y);
+            cameraRot += SDL::FVector2(-(mouse.y - grabPos.y), mouse.x - grabPos.x) * cameraSens;
+            grabPos = mouse;
+        }
+
         renderer.Clear(SDL::Color::Transparent);
 
         time += deltaTime;
@@ -287,7 +303,8 @@ int main() {
         transform *= view.GetMatrix();
 
         transform.Translate({0, 0, 6});
-        transform.Rotate({-15, 0, 0});
+        transform.Rotate({cameraRot.x, 0, 0});
+        transform.Rotate({0, cameraRot.y, 0});
         transform.Rotate({0, time * 60, 0});
         transform.Scale({1, 1, -1});
         transform.Translate({-0.5, -0.5, -0.5});
@@ -323,13 +340,6 @@ int main() {
             const auto p2 = vertices[1].first;
             const auto p3 = vertices[2].first;
             const auto p4 = vertices[3].first;
-            const auto centroid = (p1 + p2 + p3 + p4) / 4.0f;
-            RenderFace(renderer,
-                SDL::FVector2((p1 - centroid) * 1.05f + centroid),
-                SDL::FVector2((p2 - centroid) * 1.05f + centroid),
-                SDL::FVector2((p3 - centroid) * 1.05f + centroid),
-                SDL::FVector2((p4 - centroid) * 1.05f + centroid),
-                SDL::Color::Black);
             RenderFace(renderer, SDL::FVector2(p1), SDL::FVector2(p2), SDL::FVector2(p3), SDL::FVector2(p4), SDL::Color::White, vertices[0].second, vertices[1].second, vertices[2].second, vertices[3].second, faceTexture);
         }
         renderer.Display();

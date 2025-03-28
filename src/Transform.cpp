@@ -1,5 +1,7 @@
 #include "SDL/Transform.hpp"
 
+#include "SDL/Math.hpp"
+
 namespace SDL {
     Transform::Transform() {
 
@@ -19,11 +21,11 @@ namespace SDL {
         return *this *= matrix;
     }
 
-    Transform &Transform::Rotate(const float angle) {
+    Transform &Transform::Rotate(const Angle &angle) {
         const FMatrix3x3 matrix(
-            std::cos(angle), -std::sin(angle), 0,
-            std::sin(angle),  std::cos(angle), 0,
-                          0,                0, 1
+            Cos(angle), -Sin(angle), 0,
+            Sin(angle),  Cos(angle), 0,
+                     0,           0, 1
         );
 
         return *this *= matrix;

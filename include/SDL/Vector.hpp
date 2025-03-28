@@ -7,7 +7,7 @@
 namespace SDL {
     template <typename T = int>
     struct Vector2 {
-        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "const T must be a number type");
+        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "T must be a number type");
 
         constexpr Vector2(): x(0), y(0) {
 
@@ -134,7 +134,7 @@ namespace SDL {
 
     template <typename T = int>
     struct Vector3 {
-        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "const T must be a number type");
+        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "T must be a number type");
 
         constexpr Vector3(): x(0), y(0), z(0) {
 
@@ -247,7 +247,7 @@ namespace SDL {
 
     template <typename T = int>
     struct Vector4 {
-        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "const T must be a number type");
+        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "T must be a number type");
 
         constexpr Vector4(): x(0), y(0), z(0), w(0) {
 

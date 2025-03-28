@@ -42,6 +42,9 @@ add_executable(SDL main.cpp
         include/SDL/Properties.hpp
         src/Properties.cpp
         include/SDL/APIObject.hpp
+        include/SDL/Angle.hpp
+        include/SDL/Math.hpp
+        src/Math.cpp
 )
 target_include_directories(SDL PUBLIC include)
 target_link_libraries(SDL SDL3 SDL3_image)

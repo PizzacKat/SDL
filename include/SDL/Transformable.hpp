@@ -13,8 +13,8 @@ namespace SDL {
         [[nodiscard]] const FVector2 &GetPosition() const;
         void SetScale(const FVector2 &scale);
         [[nodiscard]] const FVector2 &GetScale() const;
-        void SetRotation(float rotation);
-        [[nodiscard]] float GetRotation() const;
+        void SetRotation(const Angle &rotation);
+        [[nodiscard]] const Angle &GetRotation() const;
         void SetOrigin(const FVector2 &origin);
         [[nodiscard]] const FVector2 &GetOrigin() const;
 
@@ -26,7 +26,7 @@ namespace SDL {
         void Transform(FVector2 &v) const override;
     private:
         FVector2 _position, _scale{1.0f, 1.0f}, _origin;
-        float _rotation = 0.0f;
+        Angle _rotation;
         SDL::Transform _transform;
     };
 }

@@ -18,6 +18,7 @@
 #include <array>
 #include <SDL3/SDL_hints.h>
 
+#include "SDL/Math.hpp"
 #include "SDL/Surface.hpp"
 
 bool running = true;
@@ -26,9 +27,7 @@ SDL_InitFlags SDL::Init::flags = SDL_INIT_VIDEO;
 
 class Transform3D {
 public:
-    Transform3D() {
-
-    }
+    Transform3D()= default;
 
     Transform3D(const SDL::FMatrix4x4 &matrix): _transform(matrix) {
 
@@ -45,25 +44,27 @@ public:
         return *this *= matrix;
     }
 
-    Transform3D &Rotate(SDL::FVector3 euler) {
-        euler *= std::numbers::pi_v<float> / 180.0f;
+    Transform3D &Rotate(const SDL::FVector3 &euler) {
+        const SDL::Angle x = SDL::FromDegrees(euler.x);
+        const SDL::Angle y = SDL::FromDegrees(euler.y);
+        const SDL::Angle z = SDL::FromDegrees(euler.z);
         const SDL::FMatrix4x4 matrixZ(
-            std::cos(euler.z), -std::sin(euler.z), 0, 0,
-            std::sin(euler.z),  std::cos(euler.z), 0, 0,
-                            0,                  0, 1, 0,
-                            0,                  0, 0, 1
+            Cos(z), -Sin(z), 0, 0,
+            Sin(z),  Cos(z), 0, 0,
+                 0,       0, 1, 0,
+                 0,       0, 0, 1
         );
         const SDL::FMatrix4x4 matrixY(
-             std::cos(euler.y), 0, std::sin(euler.y), 0,
-                             0, 1,                 0, 0,
-            -std::sin(euler.y), 0, std::cos(euler.y), 0,
-                             0, 0,                 0, 1
+             Cos(y), 0, Sin(y), 0,
+                  0, 1,      0, 0,
+            -Sin(y), 0, Cos(y), 0,
+                  0, 0,      0, 1
         );
         const SDL::FMatrix4x4 matrixX(
-            1,                 0,                  0, 0,
-            0, std::cos(euler.x), -std::sin(euler.x), 0,
-            0, std::sin(euler.x),  std::cos(euler.x), 0,
-            0,                 0,                  0, 1
+            1,      0,       0, 0,
+            0, Cos(x), -Sin(x), 0,
+            0, Sin(x),  Cos(x), 0,
+            0,      0,       0, 1
         );
 
         return *this *= matrixZ * matrixY * matrixX;
@@ -140,8 +141,8 @@ public:
         return {
             S, 0,             0,  0,
             0, S,             0,  0,
-            0, 0, -(   f/(f-n)), -1,
-            0, 0,  (-f*n/(f-n)),  0
+            0, 0, -(  f/(f-n)), -1,
+            0, 0, -(f*n/(f-n)),  0
         };
     }
 
@@ -149,6 +150,167 @@ private:
     float _minClip;
     float _maxClip;
     float _fov;
+};
+
+class Shape3D : public SDL::Shape {
+protected:
+    struct Vertex {
+        SDL::FVector3 point;
+        SDL::FColor color;
+        SDL::FVector2 uv;
+    };
+
+    struct Triangle {
+        Vertex vert1;
+        Vertex vert2;
+        Vertex vert3;
+
+        [[nodiscard]] SDL::FVector3 Center() const {
+            return SDL::FVector3(vert1.point + vert2.point + vert3.point) / 3.0f;
+        }
+    };
+public:
+    Shape3D()= default;
+
+    [[nodiscard]] virtual Triangle GetTriangle(std::size_t i) const= 0;
+    [[nodiscard]] virtual std::size_t GetTriangleCount() const= 0;
+protected:
+    [[nodiscard]] SDL::FVector2 GetPoint(const std::size_t i) const override {
+        switch (i % 3) {
+            case 0:
+                return static_cast<SDL::FVector2>(_triangles[i / 3].vert1.point);
+            case 1:
+                return static_cast<SDL::FVector2>(_triangles[i / 3].vert2.point);
+            case 2:
+                return static_cast<SDL::FVector2>(_triangles[i / 3].vert3.point);
+            default:
+                return {};
+        }
+    }
+
+    [[nodiscard]] std::size_t GetPointCount() const override {
+        return _triangles.size() * 3;
+    }
+
+    [[nodiscard]] SDL::FVector2 GetCenter() const override {
+        SDL::FVector3 sum;
+        for (const auto &triangle : _triangles)
+            sum += triangle.Center();
+        return SDL::FVector2(sum / static_cast<float>(_triangles.size()));
+    }
+
+    virtual void Transform3D(SDL::FVector3 &vec3) {
+
+    }
+
+    void Recompute3D() {
+        for (std::size_t i = 0; i < GetTriangleCount(); ++i) {
+            Triangle tri = GetTriangle(i);
+            Transform3D(tri.vert1.point);
+            Transform3D(tri.vert2.point);
+            Transform3D(tri.vert3.point);
+            _triangles.push_back(tri);
+        }
+
+        std::ranges::sort(_triangles, [] (const Triangle &a, const Triangle &b) {
+            return (a.vert1.point + a.vert2.point + a.vert3.point).z < (b.vert1.point + b.vert2.point + b.vert3.point).z;
+        });
+
+        Recompute();
+    }
+private:
+    std::vector<Triangle> _triangles;
+};
+
+class Transformable3D: public Shape3D {
+public:
+    Transformable3D()= default;
+
+    void SetPosition(const SDL::FVector3 &position) {
+        _position = position;
+        RecomputeTransform();
+        Recompute3D();
+    }
+
+    [[nodiscard]] const SDL::FVector3 &GetPosition() const {
+        return _position;
+    }
+
+    void SetRotation(const SDL::FVector3 &rotation) {
+        _rotation = rotation;
+        RecomputeTransform();
+        Recompute3D();
+    }
+
+    [[nodiscard]] const SDL::FVector3 &GetRotation() const {
+        return _rotation;
+    }
+
+    void SetScale(const SDL::FVector3 &scale) {
+        _scale = scale;
+        RecomputeTransform();
+        Recompute3D();
+    }
+
+    [[nodiscard]] const SDL::FVector3 &GetScale() const {
+        return _scale;
+    }
+
+    void SetOrigin(const SDL::FVector3 &origin) {
+        _origin = origin;
+        RecomputeTransform();
+        Recompute3D();
+    }
+
+    [[nodiscard]] const SDL::FVector3 &GetOrigin() const {
+        return _origin;
+    }
+private:
+    void RecomputeTransform() {
+        class Transform3D transform;
+        transform.Translate(_position);
+        transform.Rotate(_rotation);
+        transform.Scale(_scale);
+        transform.Translate(_origin);
+        _transform = transform;
+    }
+
+    void Transform3D(SDL::FVector3 &vec3) override {
+        SDL::FVector4 vec4(vec3, 1.0f);
+        vec4 = _transform.Apply(vec4);
+        vec4 /= vec4.w;
+        vec3 = SDL::FVector3(vec4);
+    }
+
+    SDL::FVector3 _position;
+    SDL::FVector3 _rotation;
+    SDL::FVector3 _scale;
+    SDL::FVector3 _origin;
+    class Transform3D _transform;
+};
+
+class Prism : public Transformable3D {
+public:
+    Prism()= default;
+
+    void SetSize(const SDL::FVector3 &size) {
+        _size = size;
+        Recompute3D();
+    }
+
+    [[nodiscard]] const SDL::FVector3 &GetSize() const {
+        return _size;
+    }
+private:
+    [[nodiscard]] Triangle GetTriangle(const std::size_t i) const override {
+
+    }
+
+    [[nodiscard]] std::size_t GetTriangleCount() const override {
+        return 12;
+    }
+
+    SDL::FVector3 _size;
 };
 
 void RenderFace(SDL::Renderer &renderer,
@@ -202,7 +364,6 @@ int main() {
 
     SDL::Timer timer;
     float deltaTime = 0.0f;
-    float time = 0.0f;
 
     const SDL::FVector3 points[8] = {
         {0, 0, 0}, {1, 0, 0}, {1, 0, 1},
@@ -212,10 +373,10 @@ int main() {
 
     const std::array<std::pair<int, SDL::FVector2>, 4> faces[6] = {
         {
-            std::pair{0, SDL::FVector2{1.0 / 4, 2.0 / 3}},
-            std::pair{1, SDL::FVector2{2.0 / 4, 2.0 / 3}},
-            std::pair{3, SDL::FVector2{1.0 / 4, 1.0 / 3}},
-            std::pair{4, SDL::FVector2{2.0 / 4, 1.0 / 3}}
+            std::pair{0, SDL::FVector2{4.0 / 4, 1.0 / 3}},
+            std::pair{1, SDL::FVector2{3.0 / 4, 1.0 / 3}},
+            std::pair{3, SDL::FVector2{4.0 / 4, 2.0 / 3}},
+            std::pair{4, SDL::FVector2{3.0 / 4, 2.0 / 3}}
         },
         {
             std::pair{1, SDL::FVector2{2.0 / 4, 0.0 / 3}},
@@ -224,22 +385,22 @@ int main() {
             std::pair{7, SDL::FVector2{1.0 / 4, 1.0 / 3}}
         },
         {
-            std::pair{0, SDL::FVector2{1.0 / 4, 2.0 / 3}},
-            std::pair{7, SDL::FVector2{0.0 / 4, 2.0 / 3}},
-            std::pair{3, SDL::FVector2{1.0 / 4, 1.0 / 3}},
-            std::pair{6, SDL::FVector2{0.0 / 4, 1.0 / 3}}
+            std::pair{0, SDL::FVector2{0.0 / 4, 1.0 / 3}},
+            std::pair{7, SDL::FVector2{1.0 / 4, 1.0 / 3}},
+            std::pair{3, SDL::FVector2{0.0 / 4, 2.0 / 3}},
+            std::pair{6, SDL::FVector2{1.0 / 4, 2.0 / 3}}
         },
         {
-            std::pair{2, SDL::FVector2{3.0 / 4, 2.0 / 3}},
-            std::pair{7, SDL::FVector2{4.0 / 4, 2.0 / 3}},
-            std::pair{5, SDL::FVector2{3.0 / 4, 1.0 / 3}},
-            std::pair{6, SDL::FVector2{4.0 / 4, 1.0 / 3}}
+            std::pair{2, SDL::FVector2{2.0 / 4, 1.0 / 3}},
+            std::pair{7, SDL::FVector2{1.0 / 4, 1.0 / 3}},
+            std::pair{5, SDL::FVector2{2.0 / 4, 2.0 / 3}},
+            std::pair{6, SDL::FVector2{1.0 / 4, 2.0 / 3}}
         },
         {
-            std::pair{1, SDL::FVector2{2.0 / 4, 2.0 / 3}},
-            std::pair{2, SDL::FVector2{3.0 / 4, 2.0 / 3}},
-            std::pair{4, SDL::FVector2{2.0 / 4, 1.0 / 3}},
-            std::pair{5, SDL::FVector2{3.0 / 4, 1.0 / 3}}
+            std::pair{1, SDL::FVector2{3.0 / 4, 1.0 / 3}},
+            std::pair{2, SDL::FVector2{2.0 / 4, 1.0 / 3}},
+            std::pair{4, SDL::FVector2{3.0 / 4, 2.0 / 3}},
+            std::pair{5, SDL::FVector2{2.0 / 4, 2.0 / 3}}
         },
         {
             std::pair{3, SDL::FVector2{1.0 / 4, 3.0 / 3}},
@@ -255,7 +416,7 @@ int main() {
     SDL::FVector2 grabPos;
     SDL::FVector3 cameraRot{-15, 0, 0};
 
-    float cameraSens = 0.5f;
+    SDL::Angle angle;
 
     while (running) {
         View3D view;
@@ -290,6 +451,7 @@ int main() {
         }
 
         if (cameraDown) {
+            constexpr float cameraSens = 0.5f;
             SDL_GetGlobalMouseState(&mouse.x, &mouse.y);
             cameraRot += SDL::FVector2(-(mouse.y - grabPos.y), mouse.x - grabPos.x) * cameraSens;
             grabPos = mouse;
@@ -297,16 +459,22 @@ int main() {
 
         renderer.Clear(SDL::Color::Transparent);
 
-        time += deltaTime;
+        angle += SDL::FromRadians(deltaTime);
+        angle = angle.Wrap();
+
+        float w = 1920.0f - window.GetSize().x;
+        float h = 1020.0f - window.GetSize().y;
+
+        window.SetPosition(SDL::FVector2(Cos(angle) * w / 2 + w / 2, Sin(angle * 2) * h / 2 + h / 2));
 
         Transform3D transform;
         transform *= view.GetMatrix();
 
-        transform.Translate({0, 0, 6});
+        transform.Translate({0, 0, -6});
         transform.Rotate({cameraRot.x, 0, 0});
         transform.Rotate({0, cameraRot.y, 0});
-        transform.Rotate({0, time * 60, 0});
-        transform.Scale({1, 1, -1});
+        transform.Rotate({0, angle.AsDegrees(), 0});
+        transform.Scale({1, 1, 1});
         transform.Translate({-0.5, -0.5, -0.5});
 
         SDL::FVector3 viewPoints[8];
@@ -331,7 +499,7 @@ int main() {
         std::ranges::sort(vertexFaces, [](const auto &a, const auto &b) {
             float dA = (a[0].first + a[1].first + a[2].first + a[3].first).z;
             float dB = (b[0].first + b[1].first + b[2].first + b[3].first).z;
-            return dB > dA;
+            return dB < dA;
         });
 
         renderer.SetDrawColor(SDL::Color::Black);

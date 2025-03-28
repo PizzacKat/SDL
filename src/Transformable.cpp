@@ -21,12 +21,12 @@ namespace SDL {
         return _scale;
     }
 
-    void Transformable::SetRotation(const float rotation) {
+    void Transformable::SetRotation(const Angle &rotation) {
         _rotation = rotation;
         RecomputeTransform();
     }
 
-    float Transformable::GetRotation() const {
+    const Angle &Transformable::GetRotation() const {
         return _rotation;
     }
 

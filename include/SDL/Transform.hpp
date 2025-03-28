@@ -1,6 +1,7 @@
 #ifndef TRANSFORM_HPP
 #define TRANSFORM_HPP
 
+#include "Angle.hpp"
 #include "Matrix.hpp"
 
 namespace SDL {
@@ -10,7 +11,7 @@ namespace SDL {
         Transform(const FMatrix3x3 &matrix);
 
         Transform &Translate(const FVector2 &delta);
-        Transform &Rotate(float angle);
+        Transform &Rotate(const Angle &angle);
         Transform &Scale(const FVector2 &scale);
 
         Transform operator*(const Transform &other) const;

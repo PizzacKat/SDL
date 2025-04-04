@@ -1,5 +1,5 @@
-﻿#include "SDL/Window.hpp"
-#include "SDL/Error.hpp"
+﻿#include "SDLPP/Window.hpp"
+#include "SDLPP/Error.hpp"
 
 namespace SDL {
     Window::Window(const std::string &title, const Vector2<> &size, const SDL_WindowFlags flags): _window(SDL_CreateWindow(title.c_str(), size.x, size.y, flags)) {

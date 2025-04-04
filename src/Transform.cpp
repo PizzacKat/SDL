@@ -1,6 +1,6 @@
-#include "SDL/Transform.hpp"
+#include "SDLPP/Transform.hpp"
 
-#include "SDL/Math.hpp"
+#include "SDLPP/Math.hpp"
 
 namespace SDL {
     Transform::Transform() {

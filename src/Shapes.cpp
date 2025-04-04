@@ -1,4 +1,4 @@
-#include "SDL/Shapes.hpp"
+#include "SDLPP/Shapes.hpp"
 
 namespace SDL::Shapes {
     Rectangle::Rectangle() = default;

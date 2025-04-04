@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <optional>
-#include <SDL/Vector.hpp>
+#include "Vector.hpp"
 
 namespace SDL {
     template <typename T = int>

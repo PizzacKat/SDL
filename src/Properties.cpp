@@ -1,6 +1,6 @@
-#include "SDL/Properties.hpp"
+#include "SDLPP/Properties.hpp"
 
-#include "SDL/Error.hpp"
+#include "SDLPP/Error.hpp"
 
 namespace SDL {
     Properties::Properties(): _properties(0) {

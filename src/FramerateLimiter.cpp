@@ -1,4 +1,4 @@
-#include "SDL/FramerateLimiter.hpp"
+#include "SDLPP/FramerateLimiter.hpp"
 
 #include <SDL3/SDL_timer.h>
 

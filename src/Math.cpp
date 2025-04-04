@@ -1,4 +1,4 @@
-#include "SDL/Math.hpp"
+#include "SDLPP/Math.hpp"
 
 namespace SDL {
     float Cos(const Angle &angle) {

@@ -1,4 +1,4 @@
-#include "SDL/Vertex.hpp"
+#include "SDLPP/Vertex.hpp"
 
 namespace SDL {
     Vertex::Vertex() = default;

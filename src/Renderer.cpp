@@ -1,5 +1,5 @@
-﻿#include "SDL/Renderer.hpp"
-#include "SDL/Error.hpp"
+﻿#include "SDLPP/Renderer.hpp"
+#include "SDLPP/Error.hpp"
 
 namespace SDL {
     Renderer::Renderer(class Window &window): _renderer(SDL_CreateRenderer(window, nullptr)) {

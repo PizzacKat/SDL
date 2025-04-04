@@ -1,8 +1,5 @@
-#include "SDL/Shape.hpp"
-
-#include <iostream>
-
-#include "SDL/Renderer.hpp"
+#include "SDLPP/Shape.hpp"
+#include "SDLPP/Renderer.hpp"
 
 namespace SDL {
     Shape::Shape()= default;

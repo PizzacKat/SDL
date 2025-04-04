@@ -1,4 +1,4 @@
-﻿#include "SDL/Color.hpp"
+﻿#include "SDLPP/Color.hpp"
 
 namespace SDL {
     Color::Color(): r(0), g(0), b(0), a(255) {

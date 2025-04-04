@@ -1,4 +1,4 @@
-#include "SDL/Surface.hpp"
+#include "SDLPP/Surface.hpp"
 
 namespace SDL {
     Surface::Surface() = default;

@@ -1,4 +1,4 @@
-#include "SDL/Timer.hpp"
+#include "SDLPP/Timer.hpp"
 
 namespace SDL {
     TimeSpan::TimeSpan(const TimePoint startTime, const TimePoint endTime): _start(startTime), _end(endTime) {

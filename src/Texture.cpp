@@ -1,7 +1,7 @@
-#include "SDL/Texture.hpp"
+#include "SDLPP/Texture.hpp"
 
-#include "SDL/Error.hpp"
-#include "SDL/Renderer.hpp"
+#include "SDLPP/Error.hpp"
+#include "SDLPP/Renderer.hpp"
 #include "SDL3_image/SDL_image.h"
 
 namespace SDL {
